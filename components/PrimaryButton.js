@@ -35,7 +35,7 @@ const styles = StyleSheet.create({
         elevation: 2,
     },
     buttonText: {
-        color: 'white',
+        color: '#333',
         textAlign: 'center'
     },
     pressed: {
