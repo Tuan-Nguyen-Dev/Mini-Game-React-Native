@@ -1,8 +1,35 @@
-import { View, Text, TextInput, StyleSheet } from 'react-native'
-import React from 'react'
-import PrimaryButton from '../components/PrimaryButton'
+import { View, Text, TextInput, StyleSheet, Alert } from 'react-native'
+import React, { useState } from 'react'
+import PrimaryButton from '../components/ui/PrimaryButton'
+import Colors from '../constants/colors'
 
-const StartGameScreen = () => {
+
+
+const StartGameScreen = ({ onPickNumber }) => {
+
+    const [enteredNumber, setEnteredNumber] = useState('')
+
+    function numberInputHandler(enteredText) {
+        setEnteredNumber(enteredText)
+    }
+
+    function resetInputHandler() {
+        setEnteredNumber('');
+    }
+
+    function confirmInputHandler() {
+        const choseNumber = parseInt(enteredNumber);
+
+        if (isNaN(choseNumber) || choseNumber <= 0 || choseNumber > 99) {
+            // show alert...
+            Alert.alert('Invaild Number!', 'Number has to be a number between 1 and 99',
+                [{ text: 'Okay', style: 'destructive', onPress: resetInputHandler }]
+            )
+            return;
+        }
+        onPickNumber(choseNumber);
+    }
+
     return (
         <View style={styles.inputContainer}>
             <TextInput
@@ -11,9 +38,17 @@ const StartGameScreen = () => {
                 keyboardType='number-pad'
                 autoCapitalize='none'
                 autoCorrect={false}
+                onChangeText={numberInputHandler}
+                value={enteredNumber}
             />
-            <PrimaryButton>Làm Mới</PrimaryButton>
-            <PrimaryButton>Xác nhận</PrimaryButton>
+            <View style={styles.buttonsContainer}>
+                <View style={styles.buttonContainer}>
+                    <PrimaryButton onPress={resetInputHandler}>Reset</PrimaryButton>
+                </View>
+                <View style={styles.buttonContainer}>
+                    <PrimaryButton onPress={confirmInputHandler}>Confirm</PrimaryButton>
+                </View>
+            </View>
 
         </View>
     )
@@ -23,10 +58,12 @@ export default StartGameScreen;
 
 const styles = StyleSheet.create({
     inputContainer: {
+        justifyContent: "center",
+        alignItems: 'center',
         padding: 16,
         marginTop: 100,
         marginHorizontal: 24,
-        backgroundColor: '#4e0329',
+        backgroundColor: Colors.primary800,
         borderRadius: 8,
         elevation: 4,
         shadowColor: 'black',
@@ -38,11 +75,17 @@ const styles = StyleSheet.create({
         height: 50,
         width: 50,
         fontSize: 32,
-        borderBottomColor: '#ddb52f',
+        borderBottomColor: Colors.accent500,
         borderBottomWidth: 2,
-        color: '#ddb52f',
+        color: Colors.accent500,
         marginVertical: 8,
         fontWeight: 'bold',
         textAlign: 'center'
+    },
+    buttonsContainer: {
+        flexDirection: 'row'
+    },
+    buttonContainer: {
+        flex: 1
     }
 })
