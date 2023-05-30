@@ -1,8 +1,13 @@
 import { Alert, SectionList, StyleSheet, Text, View } from 'react-native'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
+import Ionicons from '@expo/vector-icons/Ionicons';
 import Title from '../components/ui/Title'
 import NumberContainer from '../components/game/NumberContainer';
 import PrimaryButton from '../components/ui/PrimaryButton';
+import Card from '../components/ui/Card';
+import InstructionText from '../components/ui/InstructionText';
+import { FlatList } from 'react-native';
+import GuessLogItem from '../components/game/GuessLogItem';
 
 function generateRandomBetween(min, max, exclude) {
     const rndNum = Math.floor(Math.random() * (max - min)) + min;
@@ -17,10 +22,23 @@ function generateRandomBetween(min, max, exclude) {
 let minBoundary = 1;
 let maxBoundary = 100;
 
-const GameScreen = ({ userNumber }) => {
+const GameScreen = ({ userNumber, onGameOver }) => {
 
-    const initialGuess = generateRandomBetween(minBoundary, maxBoundary, userNumber);
+    const initialGuess = generateRandomBetween(1, 100, userNumber);
     const [currentGuess, setCurrentGues] = useState(initialGuess);
+    const [guessRounds, setGuessRounds] = useState([initialGuess])
+
+
+    useEffect(() => {
+        if (currentGuess === userNumber) {
+            onGameOver(guessRounds.length);
+        }
+    }, [currentGuess, userNumber, onGameOver])
+
+    useEffect(() => {
+        minBoundary = 1;
+        maxBoundary = 100;
+    }, [])
 
     function nextGuessHandler(direction) {
         // direction => 'lower', 'greater'
@@ -38,8 +56,11 @@ const GameScreen = ({ userNumber }) => {
 
         console.log(minBoundary, maxBoundary);
         const newRndNumber = generateRandomBetween(minBoundary, maxBoundary, currentGuess);
-        setCurrentGues(newRndNumber)
+        setCurrentGues(newRndNumber);
+        setGuessRounds(prevGuessRounds => [newRndNumber, ...prevGuessRounds])
     }
+
+    const guessRoundsListLength = guessRounds.length;
 
     return (
         <View style={styles.screen}>
@@ -49,15 +70,30 @@ const GameScreen = ({ userNumber }) => {
                 <NumberContainer>{currentGuess}</NumberContainer>
 
             </View>
-            <View>
-                <Text>Higher or lower ?</Text>
+            <Card>
+                <InstructionText style={styles.intructionText}>Higher or lower ?</InstructionText>
                 {/* + - */}
-                <View>
-                    <PrimaryButton onPress={nextGuessHandler.bind(this, 'lower')}>-</PrimaryButton>
-                    <PrimaryButton onPress={nextGuessHandler.bind(this, 'greater')}>+</PrimaryButton>
+                <View style={styles.buttonsContainer}>
+                    <View style={styles.buttonContainer}>
+                        <PrimaryButton onPress={nextGuessHandler.bind(this, 'lower')}>
+                            <Ionicons name='md-remove' size={24} color='white' />
+
+                        </PrimaryButton>
+                    </View>
+                    <View style={styles.buttonContainer}>
+                        <PrimaryButton onPress={nextGuessHandler.bind(this, 'greater')}>
+                            <Ionicons name='md-add' size={24} color='white' />
+                        </PrimaryButton>
+                    </View>
+
                 </View>
+            </Card>
+            <View style={styles.listContainer}>
+                {/* {guessRounds.map(guessRounds => <Text key={guessRounds}>{guessRounds}</Text>)} */}
+                <FlatList data={guessRounds} renderItem={(itemData) => <GuessLogItem roundNumber={guessRoundsListLength - itemData.index} guess={itemData.item} />}
+                    keyExtractor={(item) => item}
+                />
             </View>
-            {/* <View>LOG ROUNDS</View> */}
         </View>
     )
 }
@@ -69,5 +105,17 @@ const styles = StyleSheet.create({
         flex: 1,
         padding: 24
     },
-
+    intructionText: {
+        marginBottom: 12,
+    },
+    buttonsContainer: {
+        flexDirection: 'row'
+    },
+    buttonContainer: {
+        flex: 1
+    },
+    listContainer: {
+        flex: 1,
+        padding: 16,
+    }
 })
